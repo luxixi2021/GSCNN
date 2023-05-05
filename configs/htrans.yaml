@@ -1,0 +1,38 @@
+data:
+  class_path: dna_playground.data.DNADataset
+  init_args:
+    root_path: data
+    train_batch_size: 32
+    val_batch_size: 16
+    num_workers: 4
+    repeat: 1
+
+model:
+  class_path: dna_playground.models.GSCNN
+  init_args:
+    learning_rate: 0.0012
+    momentum: 0.9
+    weight_decay: 0.0002
+    norm_weight_decay: 0.0
+    max_epochs: 30
+    dropout_rate: 0.4
+
+trainer:
+  max_epochs: 30
+  accelerator: "gpu"
+  devices: 1
+
+
+  callbacks:
+    # - class_path: RichProgressBar
+    #   init_args:
+    #     leave: True
+    - class_path: ModelCheckpoint
+      init_args:
+        filename: "epoch_{epoch:03d}_acc_{val/acc:.02f}"
+        auto_insert_metric_name: False
+        save_top_k: -1
+        every_n_epochs: 1
+    - LearningRateMonitor
+
+  default_root_dir: wandb
