@@ -7,7 +7,7 @@ conda create -n dna python=3.9
 conda activate dna
 conda install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia
 
-git clone https://github.com/Luca-kobe/GSCNN.git
+git clone https://github.com/luxixi2021/GSCNN.git
 cd dna-playground
 pip install -v -e .
 
