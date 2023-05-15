@@ -40,7 +40,7 @@ class DNADatasetImpl(Dataset):
         type_ids = self.type_ids[index]
         annos = self.annos[index]
 
-        end_indices = np.where(type_ids == 5)[0].tolist()
+        end_indices = np.where(type_ids == 5)[0].tolist() # index of 'N' in type_vocabs
         end_indices = [item+1 for item in end_indices]
         start_indices = [0] + end_indices
         lengths = []
@@ -76,7 +76,6 @@ class DNADatasetImpl(Dataset):
             indices = np.random.permutation(h_seqs.shape[0])
             h_seqs = h_seqs[indices]
             h_type_ids = h_type_ids[indices]
-
         return h_seqs, h_type_ids, tmp, annos
 
 class DNADataset(pl.LightningDataModule):
@@ -154,9 +153,9 @@ class DNADataset(pl.LightningDataModule):
         train_type_ids = []
         train_tmp_ids = []
         aug_train_annos=[]
-        for aug in range(2):
+        for aug in range(1):
             for (train_seq_id, train_raw_seq), train_anno_id, train_anno in zip(train_lines, train_annos_index, train_annos):
-                #print('seq',train_raw_seq)
+                
                 assert train_seq_id == train_anno_id, (train_seq_id, train_anno_id)
                 assert len(train_raw_seq) % 2 == 0
                 train_raw_seq[-1] == "N"
@@ -177,9 +176,9 @@ class DNADataset(pl.LightningDataModule):
                     seq_list = re.split(r'([N])',train_raw_seq)
                     seq_list.append('')
                     seq_list=[''.join(i) for i in zip(seq_list[0::2],seq_list[1::2])][0:-1]
-                    seq_aug=seq_list[aug:aug+1]
+                    seq_aug = seq_list[aug]
                     seq_list.pop(aug)
-                    newseq_list=seq_aug+seq_list
+                    newseq_list = seq_list + [seq_aug]
                     train_new_seq = ''.join(newseq_list)                    
                     for i in range(0, len(train_new_seq), 2):
                         train_sub = train_new_seq[i:i + 2]
