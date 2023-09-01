@@ -72,8 +72,15 @@ class DNADatasetImpl(Dataset):
         h_seqs = h_seqs.float()
         h_type_ids = h_type_ids.float()                
         tmp = torch.tensor(tmp).float()
+        chrom_list = list(range(0,h_seqs.shape[0],1))
+        #online augmentation
         if self.augmentation:
+            #change all chromosomes order
             indices = np.random.permutation(h_seqs.shape[0])
+            #change one chromosome order
+            #aug = [random.choice(chrom_list)]
+            #chrom_list.pop(aug[0])
+            #indices = chrom_list+aug
             h_seqs = h_seqs[indices]
             h_type_ids = h_type_ids[indices]
         return h_seqs, h_type_ids, tmp, annos
@@ -122,21 +129,20 @@ class DNADataset(pl.LightningDataModule):
             annos[:, col:col + 1] = scaler.fit_transform(annos[:, col:col + 1])
 
         assert len(lines) == len(annos), (len(lines), len(annos))
-
+        
         vocabs = [
             f"{a}{b}"
             for a in ["H", "L", "M"]
             for b in ["K", "W", "J", "Y", "N"]
-        ]
-
-        #vocabs = ["H", "L", "M"]
+        ] #SNP encoding by genotype & PD or LD   
+        #vocabs = ["H", "L", "M"] #SNP encoding only by genotype,wiout PD or LD
         vocabs = {
             k: i + 1
             for i, k in enumerate(vocabs)
         }
 
-        type_vocabs = ["K", "W", "J", "Y", "N"]
-        #type_vocabs = ["J", "N"]
+        type_vocabs = ["K", "W", "J", "Y", "N"] #SNP encoding by genotype & PD or LD        
+        #type_vocabs = ["J", "N"] #SNP encoding only by genotype,wiout PD or LD
         type_vocabs = {
             k: i + 1
             for i, k in enumerate(type_vocabs)
@@ -153,7 +159,7 @@ class DNADataset(pl.LightningDataModule):
         train_type_ids = []
         train_tmp_ids = []
         aug_train_annos=[]
-        for aug in range(1):
+        for aug in range(m): #m=offline augmentation folds
             for (train_seq_id, train_raw_seq), train_anno_id, train_anno in zip(train_lines, train_annos_index, train_annos):
                 
                 assert train_seq_id == train_anno_id, (train_seq_id, train_anno_id)
@@ -172,14 +178,21 @@ class DNADataset(pl.LightningDataModule):
                         train_type_id.append(type_vocabs[train_sub[1:]])
                     train_seqs.append(train_seq)
                     train_type_ids.append(train_type_id)
-                else:
-                    seq_list = re.split(r'([N])',train_raw_seq)
-                    seq_list.append('')
-                    seq_list=[''.join(i) for i in zip(seq_list[0::2],seq_list[1::2])][0:-1]
-                    seq_aug = seq_list[aug]
-                    seq_list.pop(aug)
-                    newseq_list = seq_list + [seq_aug]
-                    train_new_seq = ''.join(newseq_list)                    
+                #offline augmentation
+                else:                        
+                        seq_list = re.split(r'([N])',train_raw_seq)
+                        seq_list.append('')
+                        seq_list=[''.join(i) for i in zip(seq_list[0::2],seq_list[1::2])][0:-1]
+                    
+                        #change one chromosome order
+                        #seq_aug=seq_list[-(aug+1)]
+                        #seq_list.pop(-(aug+1))
+                        #newseq_list = seq_list+[seq_aug]
+                    
+                        #change all chromosome order
+                        random.seed(aug)
+                        random.shuffle(seq_list)
+                        train_new_seq = ''.join(seq_list)                  
                     for i in range(0, len(train_new_seq), 2):
                         train_sub = train_new_seq[i:i + 2]
                         train_seq.append(vocabs[train_sub[:2]])
