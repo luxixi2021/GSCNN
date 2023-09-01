@@ -15,7 +15,7 @@ model:
     weight_decay: 0.0002
     norm_weight_decay: 0.0
     max_epochs: 50 #50 for soybean; 30 for winter wheat
-    dropout_rate: 0.4
+    dropout_rate: 0.5
 
 trainer:
   max_epochs: 50 #50 for soybean; 30 for winter wheat
