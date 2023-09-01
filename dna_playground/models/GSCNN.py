@@ -178,7 +178,7 @@ class GSCNN(pl.LightningModule):
 
         self.embeddings = BertEmbeddings(self.config)
 
-        self.tmp_embedding = nn.Embedding(41, hidden_size*2) #max_population_num
+        self.tmp_embedding = nn.Embedding(41, hidden_size*2) #max_population_num+1
 
         self.tmp_convs = nn.Sequential(
             nn.BatchNorm1d(hidden_size*2),
