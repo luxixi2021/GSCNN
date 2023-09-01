@@ -14,11 +14,11 @@ model:
     momentum: 0.9
     weight_decay: 0.0002
     norm_weight_decay: 0.0
-    max_epochs: 30
+    max_epochs: 50 #50 for soybean; 30 for winter wheat
     dropout_rate: 0.4
 
 trainer:
-  max_epochs: 30
+  max_epochs: 50 #50 for soybean; 30 for winter wheat
   accelerator: "gpu"
   devices: 1
 
