@@ -72,15 +72,9 @@ class DNADatasetImpl(Dataset):
         h_seqs = h_seqs.float()
         h_type_ids = h_type_ids.float()                
         tmp = torch.tensor(tmp).float()
-        chrom_list = list(range(0,h_seqs.shape[0],1))
         #online augmentation
         if self.augmentation:
-            #change all chromosomes order
             indices = np.random.permutation(h_seqs.shape[0])
-            #change one chromosome order
-            #aug = [random.choice(chrom_list)]
-            #chrom_list.pop(aug[0])
-            #indices = chrom_list+aug
             h_seqs = h_seqs[indices]
             h_type_ids = h_type_ids[indices]
         return h_seqs, h_type_ids, tmp, annos
@@ -113,14 +107,14 @@ class DNADataset(pl.LightningDataModule):
         if self.train_npz_path.exists() and self.val_npz_path.exists():
             return
         seed = 0 #0-9
-        with open(self.root_path / "Soyseq.csv") as f:
+        with open(self.root_path / "soybean_SNPencoding_Ⅴ") as f:
             lines = f.readlines()
         lines = map(lambda x: x.strip(), lines)
         lines = filter(lambda x: len(x) > 0, lines)
         lines = map(lambda x: x.split(","), lines)
         lines = list(lines)
 
-        annos = pd.read_csv(self.root_path / "SoyBean_pheno.csv", index_col=0)
+        annos = pd.read_csv(self.root_path / "soybean_pheno.csv", index_col=0)
         annoIndex=annos.index
         annos = annos.to_numpy(dtype=np.float32)
 
@@ -169,8 +163,7 @@ class DNADataset(pl.LightningDataModule):
                 aug_train_annos.append(train_anno)
                 train_seq = []
                 train_type_id = []
-                train_tmp_ids.append(int(train_anno_id.split('_')[-1]))
-                
+                train_tmp_ids.append(int(train_anno_id.split('_')[-1]))                
                 if aug == 0:
                     for i in range(0, len(train_raw_seq), 2):
                         train_sub = train_raw_seq[i:i + 2]
@@ -183,13 +176,6 @@ class DNADataset(pl.LightningDataModule):
                         seq_list = re.split(r'([N])',train_raw_seq)
                         seq_list.append('')
                         seq_list=[''.join(i) for i in zip(seq_list[0::2],seq_list[1::2])][0:-1]
-                    
-                        #change one chromosome order
-                        #seq_aug=seq_list[-(aug+1)]
-                        #seq_list.pop(-(aug+1))
-                        #newseq_list = seq_list+[seq_aug]
-                    
-                        #change all chromosome order
                         random.seed(aug)
                         random.shuffle(seq_list)
                         train_new_seq = ''.join(seq_list)                  
