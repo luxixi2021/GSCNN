@@ -172,13 +172,13 @@ class GSCNN(pl.LightningModule):
             intermediate_size=intermediate_size,
             hidden_act=hidden_act,
             type_vocab_size=type_vocab_size,
-            max_position_embeddings=320,#max_lenght+1
+            max_position_embeddings=320, #320 for soybean; 1127 for sorghum
             dropout_rate = dropout_rate,
         )
 
         self.embeddings = BertEmbeddings(self.config)
 
-        self.tmp_embedding = nn.Embedding(41, hidden_size*2) #max_population_num+1
+        self.tmp_embedding = nn.Embedding(41, hidden_size*2) #41 for soybean; 5 for sorghum
 
         self.tmp_convs = nn.Sequential(
             nn.BatchNorm1d(hidden_size*2),
